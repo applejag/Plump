@@ -16,27 +16,33 @@ public class GameController : MonoBehaviour {
 	}
 
 	void Update() {
-		UpdateCards ();
+		Raycast ();
 	}
 		
-	void UpdateCards() {
+	void Raycast() {
 		// Raycast
 		RaycastHit2D hit = Physics2D.Raycast (Camera.main.ScreenToWorldPoint (Input.mousePosition), Vector2.zero);
 
-		// Reset cards
+		UpdateCards (hit.collider != null ? hit.collider.GetComponent<CardController> () : null);
+	}
+
+	void UpdateCards(CardController card) {
+		if (card != null) {
+			card.mouse.hover = true;
+			
+			if (Input.GetMouseButtonDown(0)) card.MouseDown();
+			if (Input.GetMouseButtonUp(0)) card.MouseUp();
+		}
+		
+		// Reset all other cards
 		List<CardController> cardObjects = new List<CardController> (FindObjectsOfType<CardController> ());
 		cardObjects.ForEach (delegate(CardController obj) {
-			obj.hover = false;
-		});
-
-		// Collided with something
-		if (hit.collider != null) {
-			CardController card = hit.collider.GetComponent<CardController> ();
-			// Got a CardController
-			if (card != null) {
-				card.hover = true;
+			if (obj != card) {
+				if (obj.mouse.down && !Input.GetMouseButton(0)) obj.MouseUp();
+				
+				obj.mouse.hover = obj.mouse.down;
 			}
-		}
+		});
 	}
 
 }

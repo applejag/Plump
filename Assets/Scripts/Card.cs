@@ -30,7 +30,7 @@ public class Card {
 	}
 	
 	public GameObject InstantiateCard(GameObject prefab, Vector3 position, Quaternion rotation) {
-		GameObject clone = GameObject.Instantiate(prefab, Vector3.zero, rotation) as GameObject;
+		GameObject clone = GameObject.Instantiate(prefab, position, rotation) as GameObject;
 		clone.GetComponent<SpriteRenderer>().sprite = sprite;
 		
 		assignedObject = clone;

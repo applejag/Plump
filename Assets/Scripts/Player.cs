@@ -21,4 +21,12 @@ public class Player : MonoBehaviour {
 
 	}
 
+	void Update() {
+		hand.cards.ForEach (delegate(Card obj) {
+			CardController card = obj.assignedObject.GetComponent<CardController>();
+			
+			card.InHand();
+		});
+	}
+
 }

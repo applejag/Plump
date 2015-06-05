@@ -44,7 +44,7 @@ public struct Hand {
 		for (int num = 0; num < cards.Count; num++) {
 			Quaternion rotation = Quaternion.Euler(0,0,Mathf.Lerp(minRot,maxRot,(float)num/(cards.Count-1)));
 
-			cards[num].InstantiateCard(prefab, Vector3.zero, rotation).transform.SetParent(player.transform,false);
+			cards[num].InstantiateCard(prefab, Vector3.forward * num, rotation).transform.SetParent(player.transform,false);
 		}
 
 		SetVisable (visable);

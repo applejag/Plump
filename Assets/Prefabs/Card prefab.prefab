@@ -9,6 +9,8 @@ GameObject:
   m_Component:
   - 4: {fileID: 488904}
   - 212: {fileID: 21243830}
+  - 61: {fileID: 6157328}
+  - 114: {fileID: 11479946}
   m_Layer: 0
   m_Name: Card prefab
   m_TagString: Untagged
@@ -28,6 +30,39 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 0
+--- !u!61 &6157328
+BoxCollider2D:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 170054}
+  m_Enabled: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_UsedByEffector: 0
+  m_Offset: {x: 0, y: .61500001}
+  serializedVersion: 2
+  m_Size: {x: .790000021, y: 1.23000002}
+--- !u!114 &11479946
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 170054}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 030e337054d61a143b6c74a23a1fd79d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 1
+  rotateSpeed: 1
+  hoverSpeed: 3
+  mouse:
+    hover: 0
+    down: 0
+    offset: {x: 0, y: 0, z: 0}
+  startRotation: {x: 0, y: 0, z: 0, w: 0}
+  startPosition: {x: 0, y: 0, z: 0}
 --- !u!212 &21243830
 SpriteRenderer:
   m_ObjectHideFlags: 1
