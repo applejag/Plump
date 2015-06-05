@@ -4,67 +4,67 @@ using System.Collections.Generic;
 
 public struct Hand {
 	public List<Card> cards;
-	public bool visable; // Default: true
+	private bool visable; // Default: true
 	public Player player;
 	
-	public List<GameObject> cardObjects;
-	
 	#region Constructor
-	public Hand (List<Card> cards, bool visable, Player player) {
+	public Hand (List<Card> cards, Player player, bool visable = true) {
 		this.cards = cards;
 		this.visable = visable;
 		this.player = player;
-		this.cardObjects = new List<GameObject>();
+	}
+
+	public Hand(Player player, Deck deck, int cards = 5, bool visable = true) {
+		this = new Hand (player, visable);
+
+		for (int count = 0; count < cards && deck.CardsLeft(); count++) {
+			this.cards.Add(deck.TakeFirstCard());
+		}
 	}
 	
-	public Hand (List<Card> cards, Player player) {
-		this = new Hand (cards, true, player);
+	public Hand(Player player, bool visable = true) {
+		this = new Hand (new List<Card> (), player, visable);
 	}
 	#endregion
-	
+
 	#region Methods
-	public static Hand RandomHand(Deck deck, Player player, uint size = 5) {
-		Hand hand = new Hand(cards, player);
-		hand.Randomize (deck, size);
-	}
-	public void Randomize(Deck deck) {
-		this.Randomize (deck, cards.Count);
-	}
-	public void Randomize(Deck deck, int size) {
-		List<Card> cards = new List<Card> (size);
-		
-		for (int count = 0; count < size; count++) {
-			Suit suit = deck.suits [Random.Range (0, 4)];
-			Card card = suit.cards [Random.Range (0, 13)];
-			cards.Add (card);
-		}
-		
-		this.cards = cards;
-	}
 	public void ClearObjects() {
-		foreach (GameObject card in cardObjects) {
-			GameObject.Destroy(card);
+		foreach (Card card in cards) {
+			if (card.assignedObject != null) {
+				GameObject.Destroy(card.assignedObject);
+				card.assignedObject = null;
+			}
 		}
 	}
-	public void Instantiate(GameObject prefab) {
-		this.ClearObjects ();
-		float minRot = -45;
-		float maxRot = 45;
+
+	public void InstantiateCards(GameObject prefab) {
+		float minRot = Mathf.Min(cards.Count,6) * -15;
+		float maxRot = Mathf.Min(cards.Count,6) * 15;
 		
 		for (int num = 0; num < cards.Count; num++) {
-			
-			Quaternion rotation = Quaternion.Euler(0,0,Mathf.LerpAngle(minRot,maxRot,(float)num/cards.Count));
-			GameObject clone = GameObject.Instantiate(prefab, player.transform.position,rotation) as GameObject;
-			
-			Card card = cards[num];
-			
-			clone.GetComponent<SpriteRenderer>().sprite = card.sprite;
-			clone.transform.parent = player.transform;
-			this.cardObjects.Add(clone);
-			
-			card.assignedObject = clone;
-			cards[num] = card;
+			Quaternion rotation = Quaternion.Euler(0,0,Mathf.Lerp(minRot,maxRot,(float)num/(cards.Count-1)));
+
+			cards[num].InstantiateCard(prefab, Vector3.zero, rotation).transform.SetParent(player.transform,false);
 		}
+
+		SetVisable (visable);
+	}
+
+	public void Swap(Card a, Card b) {
+		Swap (cards.IndexOf (a), cards.IndexOf (b));
+	}
+	public void Swap(int indexA, int indexB) {
+		Card tmp = cards [indexA];
+		cards [indexA] = cards [indexB];
+		cards [indexB] = tmp;
+	}
+
+	public void SetVisable(bool visable) {
+		this.visable = visable;
+
+		cards.ForEach (delegate(Card obj) {
+			obj.SetVisable(visable);
+		});
 	}
 	#endregion
 }

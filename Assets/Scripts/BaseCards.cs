@@ -8,35 +8,6 @@ public enum CardColor {
 }
 
 #region Structs (Suit, Deck)
-public struct Card {
-	public Sprite sprite;
-	public CardColor color;
-	public int num;
-	public GameObject assignedObject;
-
-	#region Constructor
-	public Card(Sprite sprite, CardColor color, int num) {
-		this = new Card (sprite, color, num, null);
-	}
-
-	public Card(Sprite sprite, CardColor color, int num, GameObject gameobject) {
-		this.sprite = sprite;
-		this.color = color;
-		this.num = num;
-		this.assignedObject = gameobject;
-	}
-	#endregion
-
-	#region Methods
-	public bool SameColor(CardColor color) {
-		return this.color == color;
-	}
-	public static bool SameColor(Card card, CardColor color) {
-		return card.SameColor (color);
-	}
-	#endregion
-}
-
 public struct Suit {
 	public List<Card> cards;
 	public CardColor color;
@@ -48,7 +19,7 @@ public struct Suit {
 	}
 	#endregion
 
-	#region Methods
+	#region Static methods
 	public static Suit CreateFromColor(List<Card> cards, CardColor color) {
 		List<Card> suitedCards = new List<Card> (13);
 
@@ -63,18 +34,18 @@ public struct Suit {
 	#endregion
 }
 
-public struct Deck {
+public struct Collection {
 	public List<Suit> suits;
 	public Sprite cardback;
 
 	#region Constructor
-	public Deck(List<Suit> suits, Sprite cardback) {
+	public Collection(List<Suit> suits, Sprite cardback) {
 		this.suits = suits;
 		this.cardback = cardback;
 	}
 
 	// Group cards into suits
-	public Deck(List<Card> cards, Sprite cardback) {
+	public Collection(List<Card> cards, Sprite cardback) {
 		List<Suit> suits = new List<Suit> (4);
 
 		foreach (CardColor color in Enum.GetValues(typeof(CardColor))) {
@@ -83,11 +54,11 @@ public struct Deck {
 			suits.Add (suit);
 		}
 
-		this = new Deck (suits, cardback);
+		this = new Collection (suits, cardback);
 	}
 
 	// Split up sprites
-	public Deck(List<Sprite> cardSprites, Sprite cardback) {
+	public Collection(List<Sprite> cardSprites, Sprite cardback) {
 		List<Card> cards = new List<Card> (52);
 
 		for (int num = 0; num < 52; num++) {
@@ -96,11 +67,96 @@ public struct Deck {
 			if (num >= 26) color = CardColor.heart; // 26-38
 			if (num >= 39) color = CardColor.spade; // 39-51
 			
-			Card card = new Card(cardSprites[num], color, (num % 13) + 1);
+			Card card = new Card(cardSprites[num], cardback, color, (num % 13) + 1);
 			cards.Add(card);
 		}
 
-		this = new Deck (cards, cardback);
+		this = new Collection (cards, cardback);
+	}
+	#endregion
+
+	#region Methods
+	public List<Card> GetCards() {
+		List<Card> cards = new List<Card> ();
+
+		suits.ForEach (delegate(Suit suit) {
+			suit.cards.ForEach(delegate(Card card) {
+				cards.Add(card);
+			});
+		});
+
+		return cards;
+	}
+	#endregion
+}
+
+public struct Deck {
+	public List<Card> cards;
+	public Collection collection;
+
+	#region Contructor
+	public Deck(Collection collection) {
+		this.cards = collection.GetCards ();
+		this.collection = collection;
+	}
+	#endregion
+
+	#region Methods
+	public Card TakeCard(CardColor color, int num) {
+		Card card = cards.Find (delegate(Card obj) {
+			return obj.color == color && obj.num == num;
+		});
+
+		cards.Remove (card);
+
+		return card;
+	}
+	public Card TakeCard(Card card) {
+		if (cards.Contains(card))
+			cards.Remove (card);
+		
+		return card;
+	}
+
+	public Card TakeRandomCard() {
+		return cards.Count > 0 ? TakeCard (cards [UnityEngine.Random.Range (0, cards.Count)]) : null;
+	}
+	public Card TakeFirstCard() {
+		return cards.Count > 0 ? TakeCard (cards [0]) : null;
+	}
+
+	public bool CardsLeft() {
+		return cards.Count > 0;
+	}
+
+	public List<Card> GetCards(Suit suit) {
+		return GetCards (suit.color);
+	}
+	public List<Card> GetCards(CardColor color) {
+		return cards.FindAll (delegate(Card obj) {
+			return obj.color == color;
+		});
+	}
+	public List<Card> GetCards(int num) {
+		return cards.FindAll (delegate(Card obj) {
+			return obj.num == num;
+		});
+	}
+
+	public void Shuffle() {
+		// Fisher Yates Shuffle, source: http://answers.unity3d.com/questions/16531/randomizing-arrays.html
+		for (int i = cards.Count-1; i > 0; i--) {
+			Swap(UnityEngine.Random.Range(0,i), i);
+		}
+	}
+
+	public void Swap(Card a, Card b) {
+		Swap (cards.IndexOf (a), cards.IndexOf (b));
+	}
+	public void Swap(int indexA, int indexB) {
+		Card tmp = cards [indexA];
+		cards [indexA] = cards [indexB];
+		cards [indexB] = tmp;
 	}
 	#endregion
 }
@@ -110,46 +166,12 @@ public class BaseCards : MonoBehaviour {
 
 	public List<Sprite> cardSprites = new List<Sprite> ();
 	public Sprite cardback;
-	[HideInInspector]
-	public Deck deck;
-
 	public GameObject cardPrefab;
-	private Coroutine spawnerCoroutine;
+
+	[HideInInspector] public Collection collection;
 
 	void Awake () {
-		deck = new Deck (cardSprites, cardback);
+		collection = new Collection (cardSprites, cardback);
 	}
-
-	/*
-	void Start() {
-		spawnerCoroutine = StartCoroutine (SpawnCards ());
-	}
-
-	void Update() {
-		if (Input.GetMouseButtonDown (0)) {
-			spawnerCoroutine = StartCoroutine (SpawnCards ());
-		}
-	}
-
-	IEnumerator SpawnCards() {
-		if (spawnerCoroutine != null) {
-			foreach(SpriteRenderer ren in FindObjectsOfType<SpriteRenderer>()) {
-				Destroy(ren.gameObject);
-			}
-			StopCoroutine(spawnerCoroutine);
-		}
-
-		for (int suit = 0; suit < 4; suit++) {
-			foreach (Card card in deck.suits[suit].cards) {
-				yield return new WaitForFixedUpdate();
-
-				Vector3 pos = new Vector3(card.num-1+suit*.5f,suit,card.num-1+suit*2);
-				GameObject clone = Instantiate(cardPrefab, pos, Quaternion.identity) as GameObject;
-				clone.GetComponent<SpriteRenderer>().sprite = card.sprite;
-				clone.name = card.color.ToString() + " " + card.num;
-			}
-		}
-	}
-	*/
 
 }
