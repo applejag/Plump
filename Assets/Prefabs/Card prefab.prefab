@@ -54,8 +54,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 030e337054d61a143b6c74a23a1fd79d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 1
-  rotateSpeed: 1
+  moveSpeed: 5
+  rotateSpeed: 8
   hoverSpeed: 3
   mouse:
     hover: 0

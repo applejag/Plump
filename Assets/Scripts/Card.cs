@@ -6,15 +6,16 @@ public class Card {
 	public Sprite cardback;
 	public CardColor color;
 	public int num;
-	public GameObject assignedObject; // Card prefab
+
+	public CardController assignedObject; // Card prefab
 	
 	#region Constructor
-	public Card(Sprite sprite, Sprite cardback, CardColor color, int num, GameObject gameobject = null) {
+	public Card(Sprite sprite, Sprite cardback, CardColor color, int num, CardController assignedObject = null) {
 		this.sprite = sprite;
 		this.cardback = cardback;
 		this.color = color;
 		this.num = num;
-		this.assignedObject = gameobject;
+		this.assignedObject = assignedObject;
 	}
 	#endregion
 	
@@ -33,8 +34,8 @@ public class Card {
 		GameObject clone = GameObject.Instantiate(prefab, position, rotation) as GameObject;
 		clone.GetComponent<SpriteRenderer>().sprite = sprite;
 		
-		assignedObject = clone;
-		clone.GetComponent<CardController> ().card = this;
+		assignedObject = clone.GetComponent<CardController> ();
+		assignedObject.card = this;
 		
 		return clone;
 	}

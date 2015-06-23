@@ -35,14 +35,13 @@ public class GameController : MonoBehaviour {
 		}
 		
 		// Reset all other cards
-		List<CardController> cardObjects = new List<CardController> (FindObjectsOfType<CardController> ());
-		cardObjects.ForEach (delegate(CardController obj) {
+		foreach (CardController obj in FindObjectsOfType<CardController> ()) {
 			if (obj != card) {
 				if (obj.mouse.down && !Input.GetMouseButton(0)) obj.MouseUp();
 				
 				obj.mouse.hover = obj.mouse.down;
 			}
-		});
+		}
 	}
 
 }
